@@ -541,7 +541,61 @@ def main():
         # Pass OCR data to exclude text areas
         wall_segments_pdf = detect_walls_from_pdf(input_pdf, page_num=0, ocr_data=ocr_data)
 
-    # --- Detect Room Boundaries (REMOVED) ---
+    # --- Export all detected items to JSON ---
+    print("\nExporting detected items to JSON...")
+    export_data = {
+        'rooms': {},
+        'doors': {},
+        'windows': {},
+        'walls': []
+    }
+
+    # Export rooms
+    for room_num, room_info in found_rooms.items():
+        export_data['rooms'][room_num] = {
+            'number': room_num,
+            'name': room_info.get('name', 'Unknown'),
+            'bbox': room_info['bbox'],
+            'shape': room_info.get('shape', 'N/A')
+        }
+
+    # Export doors
+    for door_mark, door_info in found_doors.items():
+        export_data['doors'][door_mark] = {
+            'mark': door_mark,
+            'type': door_info.get('type', 'Unknown'),
+            'bbox': door_info['bbox'],
+            'shape': 'door'
+        }
+
+    # Export windows
+    for window_mark, window_info in found_windows.items():
+        export_data['windows'][window_mark] = {
+            'mark': window_mark,
+            'type': window_info.get('type', 'Unknown'),
+            'bbox': window_info['bbox'],
+            'shape': 'window'
+        }
+
+    # Export walls (convert tuples to lists)
+    for wall in wall_segments_pdf:
+        export_data['walls'].append({
+            'start': [wall[0][0], wall[0][1]],
+            'end': [wall[1][0], wall[1][1]]
+        })
+
+    # Save to JSON
+    export_file = os.path.join(script_dir, 'room_map.json')
+    try:
+        with open(export_file, 'w', encoding='utf-8') as f:
+            json.dump(export_data, f, indent=2)
+        print(f"Exported data saved to: {export_file}")
+        print(f"  - Rooms: {len(export_data['rooms'])}")
+        print(f"  - Doors: {len(export_data['doors'])}")
+        print(f"  - Windows: {len(export_data['windows'])}")
+        print(f"  - Walls: {len(export_data['walls'])}")
+    except Exception as e:
+        print(f"Error: Could not save export data to JSON: {e}")
 
     # --- Create Annotated PDF ---
     if found_rooms or found_doors or found_windows or wall_segments_pdf:
