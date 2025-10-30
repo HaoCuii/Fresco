@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python plan.py:*)",
+      "Bash(dir:*)",
+      "Bash(python:*)",
+      "Bash(findstr:*)",
+      "Bash(cat:*)",
+      "Bash(tesseract:*)",
+      "Bash(\"C:\\Program Files\\Tesseract-OCR\\tesseract.exe\" test.png stdout)",
+      "Bash(timeout 300 python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
