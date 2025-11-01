@@ -1,37 +1,27 @@
-import google.generativeai as genai
 import json
 import os
 import sys
 from pathlib import Path
+
+import google.generativeai as genai
 from PIL import Image
 
 
 def analyze_schedule_images(image_paths, api_key):
     """
-    Send three images to Gemini API and extract schedule information
-
-    Args:
-        image_paths: List of paths to three images
-        api_key: Google API key
-
-    Returns:
-        Dictionary containing the parsed schedule data
+    Send three images to Gemini API and extract schedule information.
     """
-    # Configure Gemini API
     genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-2.5-pro")
 
-    # Use Gemini 1.5 Pro for vision capabilities
-    model = genai.GenerativeModel('gemini-2.5-pro')
-
-    # Load images
     images = []
     for img_path in image_paths:
         if not os.path.exists(img_path):
             raise FileNotFoundError(f"Image not found: {img_path}")
         images.append(Image.open(img_path))
 
-    # Create the prompt
-    prompt = """Analyze these three images and extract all schedule information (door schedule, window schedule, interior finish schedule, etc.).
+    prompt = """
+Analyze these three images and extract all schedule information (door schedule, window schedule, interior finish schedule, etc.).
 
 Please return the data in JSON format with the following structure:
 {
@@ -118,17 +108,13 @@ IMPORTANT RULES:
 5. Make sure to extract all notes from the bottom of each schedule
 6. Return ONLY valid JSON, no additional text or markdown
 
-Please analyze the images carefully and extract all visible schedule data."""
+Please analyze the images carefully and extract all visible schedule data.
+""".strip()
 
-    # Make the API call with images and prompt
     content = images + [prompt]
     response = model.generate_content(content)
+    response_text = response.text.strip()
 
-    # Extract the response text
-    response_text = response.text
-
-    # Parse the JSON response
-    # Remove markdown code blocks if present
     if response_text.startswith("```json"):
         response_text = response_text[7:]
     if response_text.startswith("```"):
@@ -139,27 +125,22 @@ Please analyze the images carefully and extract all visible schedule data."""
     response_text = response_text.strip()
 
     try:
-        schedule_data = json.loads(response_text)
-        return schedule_data
+        return json.loads(response_text)
     except json.JSONDecodeError as e:
         print(f"Error parsing JSON response: {e}")
         print(f"Response text:\n{response_text}")
         raise
 
 
-def save_schedule(schedule_data, output_path="schedule_output.json"):
-    """Save the schedule data to a JSON file"""
-    with open(output_path, 'w') as f:
+def save_schedule(schedule_data, output_path="schedule.json"):
+    with open(output_path, "w") as f:
         json.dump(schedule_data, f, indent=2)
     print(f"Schedule saved to {output_path}")
 
 
 def main():
-    """Main function to run the schedule generator"""
-    # Check for API key - hardcoded or from environment variable
-    api_key = "AIzaSyAR9CNcnULu37eOhipFXRZupH19P-GcypY"  # Your API key
+    api_key = "AIzaSyAR9CNcnULu37eOhipFXRZupH19P-GcypY"  #Exposed lol
 
-    # Fallback to environment variable if needed
     if not api_key:
         api_key = os.environ.get("GOOGLE_API_KEY")
 
@@ -169,7 +150,6 @@ def main():
         print("Or on Windows: set GOOGLE_API_KEY=your-api-key-here")
         sys.exit(1)
 
-    # Get image paths from command line arguments
     if len(sys.argv) < 4:
         print("Usage: python schedule.py <image1_path> <image2_path> <image3_path> [output_path]")
         print("\nExamples:")
@@ -181,13 +161,12 @@ def main():
     image_paths = sys.argv[1:4]
     output_path = sys.argv[4] if len(sys.argv) > 4 else "schedule_output.json"
 
-    # Verify all images exist
     for img_path in image_paths:
         if not os.path.exists(img_path):
             print(f"Error: Image file not found: {img_path}")
             sys.exit(1)
 
-    print(f"Analyzing images:")
+    print("Analyzing images:")
     for i, img_path in enumerate(image_paths, 1):
         print(f"  {i}. {img_path}")
 
@@ -195,26 +174,31 @@ def main():
 
     try:
         schedule_data = analyze_schedule_images(image_paths, api_key)
-        print(" Successfully analyzed images and extracted schedule data")
+        print("Successfully analyzed images and extracted schedule data")
 
         save_schedule(schedule_data, output_path)
-        print(f" Schedule saved to {output_path}")
+        print(f"Schedule saved to {output_path}")
 
-        # Print summary
         print("\nSchedule Summary:")
         if "doorSchedule" in schedule_data:
-            door_count = sum(len(schedule_data["doorSchedule"].get(floor, []))
-                           for floor in ["groundFloor", "firstFloor", "secondFloor"])
+            door_count = sum(
+                len(schedule_data["doorSchedule"].get(floor, []))
+                for floor in ["groundFloor", "firstFloor", "secondFloor"]
+            )
             print(f"  - Doors: {door_count}")
 
         if "windowSchedule" in schedule_data:
-            window_count = sum(len(schedule_data["windowSchedule"].get(floor, []))
-                             for floor in ["groundFloor", "firstFloor", "secondFloor"])
+            window_count = sum(
+                len(schedule_data["windowSchedule"].get(floor, []))
+                for floor in ["groundFloor", "firstFloor", "secondFloor"]
+            )
             print(f"  - Windows: {window_count}")
 
         if "interiorFinishSchedule" in schedule_data:
-            room_count = sum(len(schedule_data["interiorFinishSchedule"].get(floor, []))
-                           for floor in ["groundFloor", "firstFloor", "secondFloor"])
+            room_count = sum(
+                len(schedule_data["interiorFinishSchedule"].get(floor, []))
+                for floor in ["groundFloor", "firstFloor", "secondFloor"]
+            )
             print(f"  - Rooms: {room_count}")
 
     except Exception as e:

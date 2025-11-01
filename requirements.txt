@@ -1,0 +1,15 @@
+# IMPORTANT: External Dependencies
+# - Tesseract OCR binary must be installed separately on your system
+#   - Windows: Download from https://github.com/UB-Mannheim/tesseract/wiki
+#   - Linux: sudo apt-get install tesseract-ocr
+#   - macOS: brew install tesseract
+#
+# Installation:
+# pip install -r requirements.txt
+
+
+google-generativeai>=0.3.0
+PyMuPDF>=1.23.0
+Pillow>=10.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
