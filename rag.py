@@ -47,7 +47,7 @@ class ArchitecturalQASession:
 
     def __init__(self, schedule_data, room_map_data, ocr_data, api_key):
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-2.5-flash")
+        self.model = genai.GenerativeModel("gemini-2.5-pro")
 
         system_context = f"""{create_system_prompt()}
 
