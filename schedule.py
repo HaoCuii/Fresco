@@ -159,7 +159,7 @@ def main():
         sys.exit(1)
 
     image_paths = sys.argv[1:4]
-    output_path = sys.argv[4] if len(sys.argv) > 4 else "schedule_output.json"
+    output_path = sys.argv[4] if len(sys.argv) > 4 else "schedule.json"
 
     for img_path in image_paths:
         if not os.path.exists(img_path):

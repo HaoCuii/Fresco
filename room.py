@@ -69,16 +69,20 @@ def load_ocr_data(path):
 # Schedule parsing
 # ---------------------------------------------------------------------
 def extract_room_marks(schedule):
+    """Extract room marks from all floors in the schedule."""
     rooms = {}
     try:
-        first = schedule.get("interiorFinishSchedule", {}).get("firstFloor", [])
-        for room in first:
-            if not isinstance(room, dict):
-                continue
-            num = str(room.get("number", "")).strip()
-            name = str(room.get("NAME", "") or "").strip()
-            if num:
-                rooms[num] = name
+        ifs = schedule.get("interiorFinishSchedule", {})
+        # Extract from all floors, not just firstFloor
+        for floor_key in ["groundFloor", "firstFloor", "secondFloor"]:
+            floor_rooms = ifs.get(floor_key, [])
+            for room in floor_rooms:
+                if not isinstance(room, dict):
+                    continue
+                num = str(room.get("number", "")).strip()
+                name = str(room.get("NAME", "") or "").strip()
+                if num:
+                    rooms[num] = name
     except Exception as e:
         print(f"Error extracting room marks: {e}")
     return rooms
