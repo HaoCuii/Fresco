@@ -22,3 +22,7 @@ Run this with your **three** schedule images (door/window/finish):
 
 ## 5. Step 4 – Architectural Q&A
 - Run: `python rag.py schedule.json room_map.json logs_ocr_data.json`
+
+## Notes
+- Gemini API is not the best, ChaptGPT works better. Try pasting the three desired files along with the prompt into ChatGPT.
+- Questions about location could be improved. With multiple follow up questions the LLM will usually be able to correctly answer the prompt.
